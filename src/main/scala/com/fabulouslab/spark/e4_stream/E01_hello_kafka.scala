@@ -16,12 +16,34 @@ object E01_hello_kafka {
 
   def main(args: Array[String]) {
 
-    /**
-      * On reçoit en temps réel via Kafka sur le topic pageviews, un stream du comportement des visiteurs
-      * sur un site internet
-      *   - Afficher le contenu de ce stream dans la console.
-      *   - Afficher la clé et la valeur dans la console (format String), en streamant le topic pageviews
-      * */
+import java.time.Duration;
+import java.util.Collections;
+import java.util.Properties;
+
+public class PageviewsConsumer {
+    public static void main(String[] args) {
+        // Configuration du consommateur Kafka
+        Properties props = new Properties();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "pageviews-consumer");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+
+        // Création du consommateur Kafka
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+
+        // S'abonner au topic "pageviews"
+        consumer.subscribe(Collections.singletonList("pageviews"));
+
+        // Boucle de consommation des messages
+        while (true) {
+            ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+            for (ConsumerRecord<String, String> record : records) {
+                System.out.println("Clé: " + record.key() + ", Valeur: " + record.value());
+            }
+        }
+    }
+}
 
   }
 
